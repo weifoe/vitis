@@ -59,13 +59,13 @@
 ![image](https://github.com/user-attachments/assets/79b12a81-5486-49af-bca3-68d833f324c9)
 
 
-### > next
+### > Next
 
 ## 6. Create Application Component (Summary)
 
 ![image](https://github.com/user-attachments/assets/f0557d06-379e-4b2f-a91f-53d580416d75)
 
-### > finish
+### > Finish
 
 
 

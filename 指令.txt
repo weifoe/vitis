@@ -1,0 +1,10 @@
+# 編譯 C 檔案
+riscv64-unknown-elf-gcc -march=rv32imc -mabi=ilp32 -ffreestanding -nostdlib -c myprog.c -o myprog.o
+
+# 編譯 startup 組合語言檔（如果是 .s 而不是 .o）
+riscv64-unknown-elf-gcc -march=rv32imc -mabi=ilp32 -c start.s -o start.o
+
+# 連結
+riscv64-unknown-elf-gcc -march=rv32imc -mabi=ilp32 \
+  start.o myprog.o -o myprog.elf \
+  -T sections.lds -nostdlib -ffreestanding

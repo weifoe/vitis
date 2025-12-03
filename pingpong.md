@@ -1,7 +1,71 @@
 # 🏓 乒乓球遊戲 AI：專家規則與自動化資料收集(冠傑)
-# Ping Pong AI: Rule-Based Expert & Data Collection
 
-本專案實作了一個基於 **物理預測 (Physics-Based Prediction)** 的專家系統 AI。它不僅能自動進行遊戲（接近無敵狀態），還能同時收集遊戲過程中的「狀態 (State)」與「動作 (Action)」，用於訓練後續的機器學習模型。
+# breakdown 
+
+<img width="1342" height="889" alt="image" src="https://github.com/user-attachments/assets/9ef43166-ca0e-4c95-a030-863176610c34" />
+
+
+# 訓練環境
+
+<img width="1930" height="796" alt="image" src="https://github.com/user-attachments/assets/a1cbfb66-9055-470d-a72b-b9f47dc35f3f" />
+
+# 得分設定
+
+<img width="1782" height="743" alt="image" src="https://github.com/user-attachments/assets/a2d0b18e-4b86-403d-931c-aa112b228740" />
+
+- ### 說明:其中一方十分會結束遊戲
+
+# 訓練資料量
+
+<img width="1559" height="921" alt="image" src="https://github.com/user-attachments/assets/927e0bb9-94a0-48a0-a71b-30e020806a94" />
+
+- ### 現遊玩4次的資料(第一筆沒截圖到)
+
+# 訓練結果
+
+<img width="1744" height="1029" alt="image" src="https://github.com/user-attachments/assets/6c693629-c55f-4f53-aa4c-9f65f0cbff7d" />
+
+<img width="1067" height="612" alt="image" src="https://github.com/user-attachments/assets/91976fdb-fac2-41cf-a9cf-8a085911f8f2" />
+
+
+## A. 不動（NONE）
+
+**意義：**  
+當板子的中心點已經位於目標落點 `± 2 像素` 的「滿意範圍」之內時，專家會判定板子已到位，因此輸出 **NONE** 指令。
+
+- 判斷條件：  
+  `abs(paddle_x - target_x) <= 2`
+
+**與訓練的關係：**  
+教導 AI **「何時應該停止」**，避免不必要的晃動。
+
+---
+
+## B. 右移動（RIGHT）
+
+**意義：**  
+當板子的中心位於目標點左側，且差距超過 `2 像素` 時，專家會下指令 **MOVE_RIGHT** 讓板子往右移動。
+
+- 判斷條件：  
+  `paddle_x < target_x - 2`
+
+**與訓練的關係：**  
+教導 AI **「何時應該向右追趕」**，避免落點偏右時接不到球。
+
+---
+
+## C. 左移動（LEFT）
+
+**意義：**  
+當板子的中心位於目標點右側，且差距超過 `2 像素` 時，專家會下指令 **MOVE_LEFT** 讓板子往左移動。
+
+- 判斷條件：  
+  `paddle_x > target_x + 2`
+
+**與訓練的關係：**  
+教導 AI **「何時應該向左追趕」**，讓板子能準確回到落點位置。
+
+---
 
 ## 🧠 核心策略：專家系統 (Rule-Based Expert)
 

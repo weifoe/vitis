@@ -27,6 +27,8 @@
 
 <img width="1067" height="612" alt="image" src="https://github.com/user-attachments/assets/91976fdb-fac2-41cf-a9cf-8a085911f8f2" />
 
+- ### 說明：訓練疊代：300
+
 
 ## A. 不動（NONE）
 

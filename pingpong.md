@@ -17,17 +17,30 @@
 
 # 訓練資料量
 
-<img width="1559" height="921" alt="image" src="https://github.com/user-attachments/assets/927e0bb9-94a0-48a0-a71b-30e020806a94" />
+<img width="1559" height="921" alt="image" src="https://github.com/user-attachments/assets/2d76e640-a23b-4a21-aba4-a0f0f429cae2" />
 
-- ### 現遊玩4次的資料(第一筆沒截圖到)
+- ### 現遊玩3次的資料
+- ### 收集條件:
+```
+
+
+# === 5. 儲存資料 ===
+# 只有在球速不為0時才收集，避免雜訊
+if vx != 0 or vy != 0:
+    self.data_buffer.append([state, action_code])
+
+```
+- ### 只有當計算出的球速（vx 或 vy）不等於零時，當前的遊戲狀態和專家指令才會被存入 self.data_buffer。
+
+- ### 目的： 這是為了避免收集雜訊。當遊戲剛開始、球被發射前，或者球被卡住時，速度都是零。這些靜止的畫面對於 AI 學習如何移動是沒有幫助的。
 
 # 訓練結果
 
-<img width="1744" height="1029" alt="image" src="https://github.com/user-attachments/assets/6c693629-c55f-4f53-aa4c-9f65f0cbff7d" />
-
-<img width="1067" height="612" alt="image" src="https://github.com/user-attachments/assets/91976fdb-fac2-41cf-a9cf-8a085911f8f2" />
+<img width="1840" height="1053" alt="image" src="https://github.com/user-attachments/assets/1e6802cf-6bb4-4a6d-8e35-49ae380436ba" />
 
 - ### 說明：訓練疊代：300
+
+
 
 
 ## A. 不動（NONE）
@@ -66,6 +79,22 @@
 
 **與訓練的關係：**  
 教導 AI **「何時應該向左追趕」**，讓板子能準確回到落點位置。
+
+## D. Precision (精確度)
+定義： 當模型預測一個動作時，它預測對的比例。
+
+Right 範例 (0.71)： 當模型決定要按右鍵時，它有 71% 的機率是正確的（專家也按了右鍵），但有 29% 的機率是錯的（可能專家應該按 None 或 Left）。
+
+## E. Recall (召回率) - 最重要的指標
+定義： 當專家規則實際需要一個動作時，模型成功捕捉到這個需求的比例。
+
+Right 範例 (0.68)： 當專家規則應該按右鍵的所有情況中，模型只有 68% 的機率預測對了 Right。這代表有 32% 的機率，模型在需要右移時，卻錯誤地預測了 None 或 Left。
+
+## F. F1-score (F1 分數)
+定義： 精確度 (Precision) 和召回率 (Recall) 的調和平均，是衡量模型在不平衡數據上表現的單一最佳指標。
+
+解讀： Left 的 F1 是 0.74，Right 是 0.69。這兩個數值跌破了 0.75 的安全線，顯示模型在模仿您高精度的專家規則（容許範圍 ±2）時，感到吃力。
+
 
 ---
 

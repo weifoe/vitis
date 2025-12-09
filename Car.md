@@ -47,3 +47,64 @@ sequenceDiagram
     FE-->>User: 顯示停車完成/確認畫面 [cite: 19] 這個要怎麼執行？
 
 ```
+---
+```mermaid
+graph TD
+    %% 定義樣式
+    classDef layer fill:#f9f9f9,stroke:#333,stroke-width:2px;
+    classDef component fill:#e1f5fe,stroke:#0277bd,stroke-width:1px;
+    classDef external fill:#fff3e0,stroke:#ef6c00,stroke-width:1px;
+
+    subgraph User_Layer ["第 1 層：使用者接入層 (User Access Layer)"]
+        direction TB
+        U((使用者)) -->|手機掃描| QR["QR Code (Ngrok)"]
+    end
+
+    subgraph Presentation_Layer ["第 2 層：表現層 (Presentation Layer - React UI)"]
+        direction TB
+        Page_Map["停車場平面圖 (顯示車位狀態)"]
+        Page_Guide["路線導引介面 (顯示路徑)"]
+        Alert_UI["異常警示彈窗 (紅框/圖示)"]
+    end
+
+    subgraph Logic_Layer ["第 3 層：業務邏輯層 (Business Logic Layer)"]
+        direction TB
+        State_Mgr["狀態管理 (React State)"]
+        Img_Process["影像處理 (Base64 轉碼)"]
+        Cam_Ctrl["攝影機控制邏輯"]
+    end
+
+    subgraph Service_Layer ["第 4 層：服務通訊層 (Service Communication Layer)"]
+        direction TB
+        API_Client["API 請求模組 (Axios/Fetch)"]
+    end
+
+    subgraph External_Systems ["外部系統 (External Systems)"]
+        Backend_API["後端 Django API"]
+        AI_Server["本地 AI 辨識主機 (VLM)"]
+    end
+
+    %% 層級關聯
+    QR --> Page_Map
+    Page_Map --> Page_Guide
+    Page_Map --> Alert_UI
+
+    Page_Map --> State_Mgr
+    Page_Guide --> State_Mgr
+    Alert_UI --> State_Mgr
+    
+    State_Mgr --> Cam_Ctrl
+    Cam_Ctrl --> Img_Process
+    
+    State_Mgr --> API_Client
+    Img_Process --> API_Client
+
+    API_Client -->|"請求車位資料"| Backend_API
+    API_Client -->|"POST 圖片"| AI_Server
+
+    %% 套用樣式
+    class User_Layer,Presentation_Layer,Logic_Layer,Service_Layer layer;
+    class Page_Map,Page_Guide,Alert_UI,State_Mgr,Img_Process,Cam_Ctrl,API_Client component;
+    class Backend_API,AI_Server external;
+```
+

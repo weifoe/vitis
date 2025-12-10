@@ -168,3 +168,44 @@ stateDiagram-v2
         DB: 更新狀態為占用
     end note
 ```
+```mermaid
+graph LR
+    %% 定義節點樣式 (圓形代表頂點 Vertex)
+    classDef process fill:#e1f5fe,stroke:#01579b,stroke-width:2px,rx:50,ry:50;
+    classDef startend fill:#fff3e0,stroke:#e65100,stroke-width:2px,rx:50,ry:50;
+    classDef decision fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,rx:50,ry:50;
+
+    %% 定義頂點 (Vertices) - 代表活動
+    V0((V0<br>使用者掃描 QR Code))
+    V1((V1<br>前端請求 API<br>載入車位狀態))
+    V2((V2<br>使用者選位<br>顯示路線導引))
+    V3((V3<br>硬體感測器<br>偵測車輛駛入))
+    V4((V4<br>系統判斷<br>車身姿態))
+    
+    %% 分支活動
+    V5((V5<br>觸發異常警示<br>蜂鳴器/紅燈))
+    V6((V6<br>啟動攝影機<br>影像轉 Base64))
+    V7((V7<br>執行 AI 辨識<br>VLM 模型))
+    V8((V8<br>更新資料庫<br>寫入車牌/占用))
+    V9((V9<br>完成指示<br>亮黃燈))
+
+    %% 定義邊 (Edges) - 代表先後依賴關係
+    V0 --> V1
+    V1 --> V2
+    V2 --> V3
+    V3 --> V4
+    
+    %% 異常依賴鏈
+    V4 -->|"若歪斜/異常"| V5
+    
+    %% 正常依賴鏈
+    V4 -->|"若正常"| V6
+    V6 --> V7
+    V7 --> V8
+    V8 --> V9
+
+    %% 樣式套用
+    class V0,V9 startend;
+    class V1,V2,V3,V5,V6,V7,V8 process;
+    class V4 decision;
+```

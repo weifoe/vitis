@@ -55,26 +55,26 @@ graph TD
     classDef component fill:#e1f5fe,stroke:#0277bd,stroke-width:1px;
     classDef external fill:#fff3e0,stroke:#ef6c00,stroke-width:1px;
 
-    subgraph User_Layer ["第 1 層：使用者接入層 (User Access Layer)"]
+    subgraph User_Layer ["第 1 層：使用者使用介面 )"]
         direction TB
         U((使用者)) -->|手機掃描| QR["QR Code (Ngrok)"]
     end
 
-    subgraph Presentation_Layer ["第 2 層：表現層 (Presentation Layer - React UI)"]
+    subgraph Presentation_Layer ["第 2 層：UI部分 (Presentation Layer - React UI)"]
         direction TB
         Page_Map["停車場平面圖 (顯示車位狀態)"]
         Page_Guide["路線導引介面 (顯示路徑)"]
         Alert_UI["異常警示彈窗 (紅框/圖示)"]
     end
 
-    subgraph Logic_Layer ["第 3 層：業務邏輯層 (Business Logic Layer)"]
+    subgraph Logic_Layer ["第 3 層： 影像辨識(Business Logic Layer)"]
         direction TB
         State_Mgr["狀態管理 (React State)"]
         Img_Process["影像處理 (Base64 轉碼)"]
         Cam_Ctrl["攝影機控制邏輯"]
     end
 
-    subgraph Service_Layer ["第 4 層：服務通訊層 (Service Communication Layer)"]
+    subgraph Service_Layer ["第 4 層：通訊層 (Service Communication Layer)"]
         direction TB
         API_Client["API 請求模組 (Axios/Fetch)"]
     end
@@ -107,4 +107,64 @@ graph TD
     class Page_Map,Page_Guide,Alert_UI,State_Mgr,Img_Process,Cam_Ctrl,API_Client component;
     class Backend_API,AI_Server external;
 ```
+```mermaid
+stateDiagram-v2
+    direction LR
 
+    %% 定義狀態
+    state "Idle (空車位)" as Idle
+    state "Reserved (預約/導引中)" as Reserved
+    state "Parking_Attempt (停車偵測中)" as Parking
+    state "Identifying (AI 車牌辨識)" as AI_Check
+    state "Alignment_Check (車態檢查)" as Align
+    state "Parked (已停妥/占用)" as Occupied
+    
+    %% 異常狀態
+    state "Error_Skewed (異常：歪斜)" as Err_Skew
+    state "Error_Mismatch (異常：車牌不符)" as Err_Plate
+
+    %% 初始狀態
+    [*] --> Idle
+
+    %% 狀態流轉
+    Idle --> Reserved : 使用者掃碼並選位
+    
+    Reserved --> Parking : 超音波感測器觸發 (GPIO)
+    Idle --> Parking : 未預約直接駛入
+    
+    Parking --> AI_Check : 車輛靜止/觸發拍照
+    
+    AI_Check --> Align : 辨識成功 & 車牌吻合
+    AI_Check --> Err_Plate : 車牌不吻合
+    
+    Align --> Err_Skew : 偵測過度歪斜
+    Align --> Occupied : 位置正常
+
+    %% 錯誤處理與恢復
+    Err_Skew --> Align : 車主調整車輛
+    Err_Skew --> Idle : 車主離開
+    Err_Plate --> Idle : 車主離開
+
+    %% 離場
+    Occupied --> Idle : 車輛駛離 (感測器數值歸零)
+
+    %% 狀態行為註解 (Actions)
+    note right of Idle
+        LED: 關閉/綠燈
+        Web: 顯示空缺
+    end note
+
+    note right of Reserved
+        Web: 顯示路線圖
+    end note
+
+    note right of Err_Skew
+        HW: 蜂鳴器響 + 紅燈
+        Web: 紅框警示
+    end note
+
+    note right of Occupied
+        HW: 黃燈
+        DB: 更新狀態為占用
+    end note
+```

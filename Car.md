@@ -209,3 +209,95 @@ graph LR
     class V1,V2,V3,V5,V6,V7,V8 process;
     class V4 decision;
 ```
+```mermaid
+
+graph TD
+    %% 定義節點樣式
+    classDef process fill:#fff2cc,stroke:#d6b656,stroke-width:2px;
+    classDef decision fill:#fff2cc,stroke:#6c8ebf,stroke-width:2px,shape:rhombus;
+    classDef terminal fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px,rx:10,ry:10;
+    classDef alert fill:#ffe6cc,stroke:#d79b00,stroke-width:2px;
+
+    %% 節點定義 (完全依照圖片文字)
+    Start("Start"):::terminal
+    Step1["手機掃描QRcode"]:::process
+    Step2["連結至網站介面"]:::process
+    Step3["選擇空車位"]:::process
+    Step4["顯示所選車位的路線圖"]:::process
+    Step5["攝影機辨識車牌"]:::process
+    
+    Check1{"車主確認<br>是否正確"}:::decision
+    
+    Step6["感測器偵測有車"]:::process
+    
+    Check2{"車牌號碼<br>是否吻合"}:::decision
+    
+    Check3{"車態是否<br>無過度歪斜"}:::decision
+    
+    Alert["蜂鳴器 警示"]:::alert
+    End("End"):::terminal
+
+    %% 連線定義 (依照箭頭流向)
+    Start --> Step1
+    Step1 --> Step2
+    Step2 --> Step3
+    Step3 --> Step4
+    Step4 --> Step5
+    Step5 --> Check1
+    
+    %% 判斷 1: 車主確認
+    Check1 -- "否" --> Step5
+    Check1 -- "是" --> Step6
+    
+    %% 流程接續
+    Step6 --> Check2
+    
+    %% 判斷 2: 車牌吻合
+    Check2 -- "否" --> Alert
+    Check2 -- "是" --> Check3
+    
+    %% 判斷 3: 車態歪斜
+    Check3 -- "否" --> Alert
+    Check3 -- "是" --> End
+    
+    %% 修正蜂鳴器後的流向 (圖中蜂鳴器下方有箭頭，通常指向結束或迴圈，此處依圖示結構暫指結束方向)
+    Alert -.-> End
+```
+
+```mermaid
+
+graph LR
+    %% 樣式設定
+    classDef std fill:#fff2cc,stroke:#d6b656,stroke-width:2px,color:black;
+    classDef terminal fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px,color:black;
+    classDef warn fill:#f8cecc,stroke:#b85450,stroke-width:2px,color:black;
+
+    %% 節點定義 (使用圓角括號)
+    S1(Idle<br>初始/掃碼):::terminal
+    S2(Selecting<br>選位中):::std
+    S3(Guiding<br>路線導引):::std
+    S4(Identifying<br>辨識車牌):::std
+    S5(Confirming<br>等待確認):::std
+    S6(Sensing<br>超音波偵測):::std
+    S7(Validating<br>偵測車態):::std
+    S8(Alerting<br>異常警示):::warn
+    S9(Parked<br>完成):::terminal
+
+    %% 連線與標籤
+    S1 -->|連結網站| S2
+    S2 -->|選擇車位| S3
+    S3 -->|啟動相機| S4
+    S4 -->|辨識完成| S5
+    
+    S5 -->|否:重試| S4
+    S5 -->|是:正確| S6
+    
+    S6 -->|偵測有車| S7
+    
+    S7 -->|否:異常| S8
+    S7 -->|是:正常| S9
+
+    %% 結束點
+    S8 --> End1((End)):::terminal
+    S9 --> End2((End)):::terminal
+```

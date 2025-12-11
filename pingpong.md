@@ -2,7 +2,7 @@
 
 # breakdown 
 
-<img width="1342" height="889" alt="image" src="https://github.com/user-attachments/assets/9ef43166-ca0e-4c95-a030-863176610c34" />
+<img width="1336" height="889" alt="image" src="https://github.com/user-attachments/assets/ac3c9084-f559-447d-bb8b-9645b2ce44a9" />
 
 
 # 訓練環境

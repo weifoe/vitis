@@ -221,4 +221,4 @@ print(f"總共收集了 {len(data)} 筆資料")
 
 ## demo 影片(2p為演算法腳本,1p為模型出來的.py)
 
-[https://www.youtube.com/watch?v=IKQi2jHhmnw](https://www.youtube.com/watch?v=IKQi2jHhmnw)
+[[https://www.youtube.com/watch?v=IKQi2jHhmnw](https://www.youtube.com/watch?v=IKQi2jHhmnw)](https://youtu.be/GQPw19qka4A?si=tWrNflKVI10bi9Hp)

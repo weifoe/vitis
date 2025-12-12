@@ -304,42 +304,133 @@ graph LR
 
 ```mermaid
 gantt
-    title NORMALIZE Pipeline Timing (X=CLK, Y=Variables)
+    title Cordic Pipeline Timing (Critical Path = 13 CLK)
+    dateFormat  HH:mm
+    axisFormat  %-M
+    
+    %% 設定 1 CLK = 1 分鐘
+    
+    section Main Cordic
+    Range (Input)       :done,    m_range, 00:00, 1m
+    iter 1              :active,  m_it1, after m_range, 2m
+    s1 (Red)            :crit,    m_s1, after m_it1, 1m
+    iter 2              :active,  m_it2, after m_s1, 2m
+    s2 (Red)            :crit,    m_s2, after m_it2, 1m
+    iter 3              :active,  m_it3, after m_s2, 2m
+    s3 (Red)            :crit,    m_s3, after m_it3, 1m
+    iter 4 (Branch Pt)  :active,  m_it4, after m_s3, 2m
+
+    
+
+    section Path Mid (S_exp)
+    S_exp (Red)         :crit,    mid_se, after m_it4, 1m
+    buffer...     :done,    mid_wait, after mid_se, 4m
+
+    section Path Top (SQ1)
+    SQ1_exp (Red)       :crit,    t_sq1e, after m_it4, 1m
+    square1 (Blue)      :active,  t_sq1, after t_sq1e, 1m
+    buffer...     :done,    t_wait, after t_sq1, 3m
+
+    section Path Bot (SQ2)
+    S_q1 (Red)          :crit,    b_sq1, after m_it4, 1m
+    square1 (Blue)      :active,  b_sq1b, after b_sq1, 1m
+    S_q2 (Red)          :crit,    b_sq2, after b_sq1b, 1m
+    square2 (Blue)      :active,  b_sq2b, after b_sq2, 1m
+    SQ2_exp (Red)       :crit,    b_exp, after b_sq2b, 1m
+
+    section Result
+    Buffer Latch        :done,    buf, after b_exp, 1m
+
+
+
+```
+
+<img width="1982" height="854" alt="image" src="https://github.com/user-attachments/assets/5fb9655b-bd7e-46b1-a03d-33544365572e" />
+
+
+
+
+```mermaid
+
+gantt
+    title Pipeline Timing (刻度 = 分鐘數, 10ns = 1CLK)
+    
+    %% 1. 設定時間格式為「小時:分鐘」
+    dateFormat  HH:mm
+    
+    %% 2. 設定軸線只顯示「分鐘數 (不補0)」
+    %% 如果你的編輯器不支援 %-M，請改回 %M (會顯示 00, 01, 02...)
+    axisFormat  %-M
+    
+    %% 3. 強制 X 軸從 00:00 開始
+    %% 所有的長度單位都改用 "m" (分鐘)
+    
+    section Data 1
+    Input (1CLK)      :done,    d1_in, 00:00, 1m
+    ite1 (2CLK)         :active,  d1_s1, after d1_in, 2m
+    ite2 (2CLK)         :active,  d1_s2, after d1_s1, 2m
+    ite3 (1CLK)         :         d1_s3, after d1_s2, 1m
+    ite4 (2CLK)         :crit,    d1_s4, after d1_s3, 2m
+    ite5 (2CLK)         :crit,    d1_s5, after d1_s4, 2m
+    Buffer (1CLK)     :done,    d1_buf, after d1_s5, 1m
+
+    section Data 2
+    %% II=2，所以從 00:02 開始
+    Input (1CLK)      :done,    d2_in, 00:01, 1m
+    ite1 (2CLK)         :active,  d2_s1, after d2_in, 2m
+    ite2 (2CLK)         :active,  d2_s2, after d2_s1, 2m
+    ite3 (1CLK)         :         d2_s3, after d2_s2, 1m
+    ite4 (2CLK)         :crit,    d2_s4, after d2_s3, 2m
+    ite5 (2CLK)         :crit,    d2_s5, after d2_s4, 2m
+    Buffer (1CLK)     :done,    d2_buf, after d2_s5, 1m
+
+    section Data 3
+    %% II=2，所以從 00:04 開始
+    Input (1CLK)      :done,    d3_in, 00:02, 1m
+    ite1 (2CLK)         :active,  d3_s1, after d3_in, 2m
+    ite2 (2CLK)         :active,  d3_s2, after d3_s1, 2m
+    ite3 (1CLK)         :         d3_s3, after d3_s2, 1m
+    ite4 (2CLK)         :crit,    d3_s4, after d3_s3, 2m
+    ite5 (2CLK)         :crit,    d3_s5, after d3_s4, 2m
+    Buffer (1CLK)     :done,    d3_buf, after d3_s5, 1m
+
+```
+```mermaid
+%%{init: { 'gantt': {'tickInterval': '1s', 'axisFormat': '%S'} } }%%
+gantt
+    title Exp-Adder-Div Pipeline (單位: 秒, 請嘗試拉寬視窗)
+    
+    %% 改用秒數格式，試圖強制顯示更細的刻度
     dateFormat  s
-    axisFormat  %s
+    axisFormat  %S
     
-    %% 設定時間軸為整數秒代表 CLK
+    %% 設定 1 CLK = 1 秒 (s)
     
-    section nor_data
-    Data 1 (In)        :done,    d1_in, 0, 1s
-    Data 2 (In)        :active,  d2_in, 2, 1s
+    %% --- 情境 A: 運算時間 8 CLK (最快) ---
+    section Path Fast (8 CLK)
+    Data In             :done,    p8_in, 0, 1s
+    Exp (Fast)          :active,  p8_exp, after p8_in, 8s
+    Buffer              :done,    p8_buf, after p8_exp, 1s
+    Adder (2CLK)        :active,  p8_add, after p8_buf, 2s
+    Rap (10CLK)         :crit,    p8_rap, after p8_add, 10s
+    Mul (1CLK)          :done,    p8_mul, after p8_rap, 1s
 
-    section iteration_data_0
-    Data 1 (s1 proc)   :d1_s1, after d1_in, 2s
-    Data 2 (s1 proc)   :active, d2_s1, after d2_in, 2s
+    %% --- 情境 B: 運算時間 9 CLK (中等) ---
+    section Path Med (9 CLK)
+    Data In             :done,    p9_in, 0, 1s
+    Exp (Med)           :active,  p9_exp, after p9_in, 9s
+    Buffer              :done,    p9_buf, after p9_exp, 1s
+    Adder (2CLK)        :active,  p9_add, after p9_buf, 2s
+    Rap (10CLK)         :crit,    p9_rap, after p9_add, 10s
+    Mul (1CLK)          :done,    p9_mul, after p9_rap, 1s
 
-    section iteration_data_1
-    Data 1 (s2 proc)   :d1_s2, after d1_s1, 2s
-    Data 2 (s2 proc)   :active, d2_s2, after d2_s1, 2s
-
-    section iteration_data_2
-    Data 1 (s3 proc)   :d1_s3, after d1_s2, 1s
-    Data 2 (s3 proc)   :active, d2_s3, after d2_s2, 1s
-
-    section iteration_data_3
-    Data 1 (s4 proc)   :d1_s4, after d1_s3, 2s
-    Data 2 (s4 proc)   :active, d2_s4, after d2_s3, 2s
-
-    section iteration_data_4
-    Data 1 (s5 proc)   :d1_s5, after d1_s4, 2s
-    Data 2 (s5 proc)   :active, d2_s5, after d2_s4, 2s
-
-    section iteration_data_5
-    Data 1 (Transfer)  :d1_out, after d1_s5, 1s
-    Data 2 (Transfer)  :active, d2_out, after d2_s5, 1s
-
-    section Buffer
-    Data 1 Ready       :crit, d1_buf, after d1_out, 1s
-    Data 2 Ready       :crit, d2_buf, after d2_out, 1s
+    %% --- 情境 C: 運算時間 10 CLK (最慢) ---
+    section Path Slow (10 CLK)
+    Data In             :done,    p10_in, 0, 1s
+    Exp (Slow)          :active,  p10_exp, after p10_in, 10s
+    Buffer              :done,    p10_buf, after p10_exp, 1s
+    Adder (2CLK)        :active,  p10_add, after p10_buf, 2s
+    Rap (10CLK)         :crit,    p10_rap, after p10_add, 10s
+    Mul (1CLK)          :done,    p10_mul, after p10_rap, 1s
 
 ```

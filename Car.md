@@ -301,3 +301,45 @@ graph LR
     S8 --> End1((End)):::terminal
     S9 --> End2((End)):::terminal
 ```
+
+```mermaid
+gantt
+    title NORMALIZE Pipeline Timing (X=CLK, Y=Variables)
+    dateFormat  s
+    axisFormat  %s
+    
+    %% 設定時間軸為整數秒代表 CLK
+    
+    section nor_data
+    Data 1 (In)        :done,    d1_in, 0, 1s
+    Data 2 (In)        :active,  d2_in, 2, 1s
+
+    section iteration_data_0
+    Data 1 (s1 proc)   :d1_s1, after d1_in, 2s
+    Data 2 (s1 proc)   :active, d2_s1, after d2_in, 2s
+
+    section iteration_data_1
+    Data 1 (s2 proc)   :d1_s2, after d1_s1, 2s
+    Data 2 (s2 proc)   :active, d2_s2, after d2_s1, 2s
+
+    section iteration_data_2
+    Data 1 (s3 proc)   :d1_s3, after d1_s2, 1s
+    Data 2 (s3 proc)   :active, d2_s3, after d2_s2, 1s
+
+    section iteration_data_3
+    Data 1 (s4 proc)   :d1_s4, after d1_s3, 2s
+    Data 2 (s4 proc)   :active, d2_s4, after d2_s3, 2s
+
+    section iteration_data_4
+    Data 1 (s5 proc)   :d1_s5, after d1_s4, 2s
+    Data 2 (s5 proc)   :active, d2_s5, after d2_s4, 2s
+
+    section iteration_data_5
+    Data 1 (Transfer)  :d1_out, after d1_s5, 1s
+    Data 2 (Transfer)  :active, d2_out, after d2_s5, 1s
+
+    section Buffer
+    Data 1 Ready       :crit, d1_buf, after d1_out, 1s
+    Data 2 Ready       :crit, d2_buf, after d2_out, 1s
+
+```

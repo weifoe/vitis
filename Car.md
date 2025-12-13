@@ -437,39 +437,48 @@ gantt
 
 ```mermaid
 
-%%{init: { 'gantt': {'tickInterval': '1s', 'axisFormat': '%S'} } }%%
+%%{init: { 'gantt': {'tickInterval': '2s', 'axisFormat': '%S'} } }%%
 gantt
-    title Pipelined Data Flow (順序: 8clk -> 9clk -> 10clk)
+    title 完整順序: Exp(8->9->10) -> Buffer -> Adder -> Rap -> Mul
     dateFormat  s
     axisFormat  %S
     
-    %% 設定 1 CLK = 1 秒 (s)
+    %% 設定 1 CLK = 1 秒
     
-    %% --- 第一筆資料: Exp=8 (優先進入) ---
-    section Data A (Exp=8)
-    Data In (0s)        :done,    d1_in, 0, 1s
-    Exp (Fast 8s)       :active,  d1_exp, after d1_in, 8s
-    Buffer              :done,    d1_buf, after d1_exp, 1s
-    Adder               :active,  d1_add, after d1_buf, 2s
-    Rap (10s)           :crit,    d1_rap, after d1_add, 10s
-    Mul                 :done,    d1_mul, after d1_rap, 1s
+    %% ==========================================
+    %% 階段 1: Exp 運算 (依序執行)
+    %% ==========================================
+    section Exp Calculation
+    %% 1. 先算 8 CLK 的 4 筆資料
+    Batch 1 (Exp 8clk)    :done,    b1, 0, 8s
+    
+    %% 2. 接著算 9 CLK 的 4 筆資料 (從 8s 開始)
+    Batch 2 (Exp 9clk)    :active,  b2, after b1, 9s
+    
+    %% 3. 接著算 10 CLK 的 4 筆資料 (從 17s 開始)
+    Batch 3 (Exp 10clk)   :crit,    b3, after b2, 10s
 
-    %% --- 第二筆資料: Exp=9 (延遲 2s 進入) ---
-    section Data B (Exp=9)
-    Data In (2s)        :done,    d2_in, 2, 1s
-    Exp (Med 9s)        :active,  d2_exp, after d2_in, 9s
-    Buffer              :done,    d2_buf, after d2_exp, 1s
-    Adder               :active,  d2_add, after d2_buf, 2s
-    Rap (10s)           :crit,    d2_rap, after d2_add, 10s
-    Mul                 :done,    d2_mul, after d2_rap, 1s
+    %%此時時間來到 T=27 (8+9+10)
 
-    %% --- 第三筆資料: Exp=10 (再延遲 2s 進入) ---
-    section Data C (Exp=10)
-    Data In (4s)        :done,    d3_in, 4, 1s
-    Exp (Slow 10s)      :active,  d3_exp, after d3_in, 10s
-    Buffer              :done,    d3_buf, after d3_exp, 1s
-    Adder               :active,  d3_add, after d3_buf, 2s
-    Rap (10s)           :crit,    d3_rap, after d3_add, 10s
-    Mul                 :done,    d3_mul, after d3_rap, 1s
+    %% ==========================================
+    %% 階段 2: 統一存入 Buffer
+    %% ==========================================
+    section Data Latch
+    %% "以上時序完成後" -> 接著存入 Buffer
+    %% 所有資料在這裡被鎖存，準備給 Adder 用
+    Buffer Latch (All)    :done,    buf, after b3, 1s
+
+    %% ==========================================
+    %% 階段 3: 後續處理 (Adder -> Rap -> Mul)
+    %% ==========================================
+    section Processing
+    %% Buffer 之後接著 Adder
+    Adder (Sum All)       :active,  add, after buf, 2s
+    
+    %% Adder 之後接著 Rap
+    Rap (Div 10CLK)       :crit,    rap, after add, 10s
+    
+    %% Rap 之後接著 Mul
+    Mul (1CLK)            :done,    mul, after rap, 1s
 
 ```

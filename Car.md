@@ -434,3 +434,42 @@ gantt
     Mul (1CLK)          :done,    p10_mul, after p10_rap, 1s
 
 ```
+
+```mermaid
+
+%%{init: { 'gantt': {'tickInterval': '1s', 'axisFormat': '%S'} } }%%
+gantt
+    title Pipelined Data Flow (順序: 8clk -> 9clk -> 10clk)
+    dateFormat  s
+    axisFormat  %S
+    
+    %% 設定 1 CLK = 1 秒 (s)
+    
+    %% --- 第一筆資料: Exp=8 (優先進入) ---
+    section Data A (Exp=8)
+    Data In (0s)        :done,    d1_in, 0, 1s
+    Exp (Fast 8s)       :active,  d1_exp, after d1_in, 8s
+    Buffer              :done,    d1_buf, after d1_exp, 1s
+    Adder               :active,  d1_add, after d1_buf, 2s
+    Rap (10s)           :crit,    d1_rap, after d1_add, 10s
+    Mul                 :done,    d1_mul, after d1_rap, 1s
+
+    %% --- 第二筆資料: Exp=9 (延遲 2s 進入) ---
+    section Data B (Exp=9)
+    Data In (2s)        :done,    d2_in, 2, 1s
+    Exp (Med 9s)        :active,  d2_exp, after d2_in, 9s
+    Buffer              :done,    d2_buf, after d2_exp, 1s
+    Adder               :active,  d2_add, after d2_buf, 2s
+    Rap (10s)           :crit,    d2_rap, after d2_add, 10s
+    Mul                 :done,    d2_mul, after d2_rap, 1s
+
+    %% --- 第三筆資料: Exp=10 (再延遲 2s 進入) ---
+    section Data C (Exp=10)
+    Data In (4s)        :done,    d3_in, 4, 1s
+    Exp (Slow 10s)      :active,  d3_exp, after d3_in, 10s
+    Buffer              :done,    d3_buf, after d3_exp, 1s
+    Adder               :active,  d3_add, after d3_buf, 2s
+    Rap (10s)           :crit,    d3_rap, after d3_add, 10s
+    Mul                 :done,    d3_mul, after d3_rap, 1s
+
+```

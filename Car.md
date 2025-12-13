@@ -482,3 +482,54 @@ gantt
     Mul (1CLK)            :done,    mul, after rap, 1s
 
 ```
+
+```mermaid
+
+%%{init: { 'gantt': {'tickInterval': '2s', 'axisFormat': '%S'} } }%%
+gantt
+    title Exp(4平行通道 x 3批次) -> Buffer -> Adder -> Rap -> Mul
+    dateFormat  s
+    axisFormat  %S
+    
+    %% 設定 1 CLK = 1 秒
+    
+    %% ==========================================
+    %% 批次 1：8 CLK (4筆平行)
+    %% ==========================================
+    section Batch 1 (8clk)
+    Exp Ch1 (Data 1)      :active, b1_1, 0, 8s
+    Exp Ch2 (Data 2)      :active, b1_2, 0, 8s
+    Exp Ch3 (Data 3)      :active, b1_3, 0, 8s
+    Exp Ch4 (Data 4)      :active, b1_4, 0, 8s
+
+    %% ==========================================
+    %% 批次 2：9 CLK (4筆平行)
+    %% 接著 Batch 1 之後開始
+    %% ==========================================
+    section Batch 2 (9clk)
+    Exp Ch1 (Data 5)      :active, b2_1, after b1_1, 9s
+    Exp Ch2 (Data 6)      :active, b2_2, after b1_2, 9s
+    Exp Ch3 (Data 7)      :active, b2_3, after b1_3, 9s
+    Exp Ch4 (Data 8)      :active, b2_4, after b1_4, 9s
+
+    %% ==========================================
+    %% 批次 3：10 CLK (4筆平行)
+    %% 接著 Batch 2 之後開始
+    %% ==========================================
+    section Batch 3 (10clk)
+    Exp Ch1 (Data 9)      :crit,   b3_1, after b2_1, 10s
+    Exp Ch2 (Data 10)     :crit,   b3_2, after b2_2, 10s
+    Exp Ch3 (Data 11)     :crit,   b3_3, after b2_3, 10s
+    Exp Ch4 (Data 12)     :crit,   b3_4, after b2_4, 10s
+
+    %% ==========================================
+    %% 後續處理 (不變)
+    %% 等 Batch 3 全部結束後才開始
+    %% ==========================================
+    section Post Process
+    Buffer Latch          :done,   buf, after b3_1, 1s
+    Adder (Sum All)       :active, add, after buf, 2s
+    Rap (10clk)           :crit,   rap, after add, 10s
+    Mul (1clk)            :done,   mul, after rap, 1s
+
+```

@@ -724,3 +724,67 @@ gantt
     Buffer (1CLK)     :done,    d3_buf, after d3_s5, 1m
 
 ```
+
+```mermaid
+
+%%{init: { 'gantt': {'barHeight': 25, 'sectionFontSize': 14} } }%%
+gantt
+    title Flowchart to Tspec (Pipeline Timing)
+    dateFormat  HH:mm
+    axisFormat  %-M
+    
+    %% =======================
+    %% Input
+    %% =======================
+    section Data (Input)
+    data        :done,   d_in, 00:00, 1m
+
+    %% =======================
+    %% Stage 1 [First Iteration Block]
+    %% =======================
+    section It1 (iteration)
+    iteration 1 :active, it1, after d_in, 1m
+
+    section S1 (Red)
+    s1          :crit,   s1, after it1, 1m
+
+    section It2 (iteration)
+    iteration 2 :active, it2, after s1, 1m
+
+    section S2 (Red)
+    s2          :crit,   s2, after it2, 1m
+
+    section It3 (iteration)
+    iteration 3 :active, it3, after s2, 1m
+
+    %% =======================
+    %% Middle Connection
+    %% =======================
+    section S3 (Red)
+    s3          :crit,   s3, after it3, 1m
+
+    %% =======================
+    %% Stage 2 [Second Iteration Block]
+    %% =======================
+    section It4 (iteration)
+    iteration 4 :active, it4, after s3, 1m
+
+    section S4 (Red)
+    s4          :crit,   s4, after it4, 1m
+
+    section It5 (iteration)
+    iteration 5 :active, it5, after s4, 1m
+
+    section S5 (Red)
+    s5          :crit,   s5, after it5, 1m
+
+    section It6 (iteration)
+    iteration 6 :active, it6, after s5, 1m
+
+    %% =======================
+    %% Output
+    %% =======================
+    section Buffer (Output)
+    Buffer      :done,   buf, after it6, 1m
+
+```

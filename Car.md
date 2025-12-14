@@ -348,6 +348,91 @@ gantt
 <img width="1982" height="854" alt="image" src="https://github.com/user-attachments/assets/5fb9655b-bd7e-46b1-a03d-33544365572e" />
 
 
+```mermaid
+
+gantt
+    title Cordic Pipeline Timing (單變數單行顯示)
+    dateFormat  HH:mm
+    axisFormat  %-M
+    
+    %% 設定 barHeight 讓圖表不要太過擁擠，保持整潔
+    %%{init: { 'gantt': {'barHeight': 25, 'sectionFontSize': 14} } }%%
+
+    %% =======================
+    %% Main Cordic Chain
+    %% =======================
+    section Range (Input)
+    Data        :done,   m_range, 00:00, 1m
+    
+    section iter 1
+    Calc        :active, m_it1, after m_range, 2m
+    
+    section s1 (Red)
+    Reg         :crit,   m_s1, after m_it1, 1m
+    
+    section iter 2
+    Calc        :active, m_it2, after m_s1, 2m
+    
+    section s2 (Red)
+    Reg         :crit,   m_s2, after m_it2, 1m
+    
+    section iter 3
+    Calc        :active, m_it3, after m_s2, 2m
+    
+    section s3 (Red)
+    Reg         :crit,   m_s3, after m_it3, 1m
+    
+    section iter 4
+    Branch Pt   :active, m_it4, after m_s3, 2m
+
+    %% =======================
+    %% Path Mid (S_exp)
+    %% =======================
+    section S_exp (Mid)
+    Reg         :crit,   mid_se, after m_it4, 1m
+    
+    section Buffer (Mid)
+    Wait        :done,   mid_wait, after mid_se, 4m
+
+    %% =======================
+    %% Path Top (SQ1)
+    %% =======================
+    section SQ1_exp (Top)
+    Reg         :crit,   t_sq1e, after m_it4, 1m
+    
+    section square1 (Top)
+    Calc        :active, t_sq1, after t_sq1e, 1m
+    
+    section Buffer (Top)
+    Wait        :done,   t_wait, after t_sq1, 3m
+
+    %% =======================
+    %% Path Bot (SQ2)
+    %% =======================
+    section S_q1 (Bot)
+    Reg         :crit,   b_sq1, after m_it4, 1m
+    
+    section square1 (Bot)
+    Calc        :active, b_sq1b, after b_sq1, 1m
+    
+    section S_q2 (Bot)
+    Reg         :crit,   b_sq2, after b_sq1b, 1m
+    
+    section square2 (Bot)
+    Calc        :active, b_sq2b, after b_sq2, 1m
+    
+    section SQ2_exp (Bot)
+    Reg         :crit,   b_exp, after b_sq2b, 1m
+
+    %% =======================
+    %% Final Result
+    %% =======================
+    section Buffer Latch
+    Output      :done,   buf, after b_exp, 1m
+
+
+
+```
 
 
 ```mermaid

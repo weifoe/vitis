@@ -677,8 +677,25 @@ gantt
 
 ```
 
+
+
 ```mermaid
 
+gantt
+    title Pipeline Timing (刻度 = 分鐘數, 10ns = 1CLK)
+    
+    %% 1. 設定時間格式為「小時:分鐘」
+    dateFormat  HH:mm
+    
+    %% 2. 設定軸線只顯示「分鐘數 (不補0)」
+    %% 如果你的編輯器不支援 %-M，請改回 %M (會顯示 00, 01, 02...)
+    axisFormat  %-M
+    
+    %% 3. 強制 X 軸從 00:00 開始
+    %% 所有的長度單位都改用 "m" (分鐘)
+    
+    section rap_Data 1
+    Input (1CLK)      :done,    d1_in, 00:00, 1m
     ite1 (2CLK)         :active,  d1_s1, after d1_in, 2m
     ite2 (2CLK)         :active,  d1_s2, after d1_s1, 2m
     ite3 (1CLK)         :         d1_s3, after d1_s2, 1m

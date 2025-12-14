@@ -618,3 +618,61 @@ gantt
     Mul (1clk)            :done,   mul, after rap, 1s
 
 ```
+
+```mermaid
+
+%%{init: { 'gantt': {'barHeight': 25, 'sectionFontSize': 14} } }%%
+gantt
+    title Cordic Pipeline (長條圖名稱已更新)
+    dateFormat  HH:mm
+    axisFormat  %-M
+    
+    %% =======================
+    %% Main Cordic Chain
+    %% =======================
+    section Range (Input)
+    Range       :done,   m_range, 00:00, 1m
+    
+    section iter 1
+    iter 1      :active, m_it1, after m_range, 2m
+    
+    section iter 2
+    iter 2      :active, m_it2, after m_it1, 2m
+    
+    section iter 3
+    iter 3      :active, m_it3, after m_it2, 2m
+    
+    section iter 4
+    iter 4      :active, m_it4, after m_it3, 2m
+
+    %% =======================
+    %% Path Mid
+    %% =======================
+    section Buffer (Mid)
+    Buffer      :done,   mid_wait, after m_it4, 2m
+
+    %% =======================
+    %% Path Top
+    %% =======================
+    section square1 (Top)
+    square1     :active, t_sq1, after m_it4, 1m
+    
+    section Buffer (Top)
+    Buffer      :done,   t_wait, after t_sq1, 1m
+
+    %% =======================
+    %% Path Bot
+    %% =======================
+    section square1 (Bot)
+    square1     :active, b_sq1b, after m_it4, 1m
+    
+    section square2 (Bot)
+    square2     :active, b_sq2b, after b_sq1b, 1m
+
+    %% =======================
+    %% Final Result
+    %% =======================
+    section Buffer Latch
+    Buffer Latch :done,   buf, after b_sq2b, 1m
+
+```

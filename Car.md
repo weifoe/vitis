@@ -676,3 +676,33 @@ gantt
     Buffer Latch :done,   buf, after b_sq2b, 1m
 
 ```
+
+
+    ite1 (2CLK)         :active,  d1_s1, after d1_in, 2m
+    ite2 (2CLK)         :active,  d1_s2, after d1_s1, 2m
+    ite3 (1CLK)         :         d1_s3, after d1_s2, 1m
+    ite4 (2CLK)         :crit,    d1_s4, after d1_s3, 2m
+    ite5 (2CLK)         :crit,    d1_s5, after d1_s4, 2m
+    Buffer (1CLK)     :done,    d1_buf, after d1_s5, 1m
+
+    section rap_Data 2
+    %% II=2，所以從 00:02 開始
+    Input (1CLK)      :done,    d2_in, 00:01, 1m
+    ite1 (2CLK)         :active,  d2_s1, after d2_in, 2m
+    ite2 (2CLK)         :active,  d2_s2, after d2_s1, 2m
+    ite3 (1CLK)         :         d2_s3, after d2_s2, 1m
+    ite4 (2CLK)         :crit,    d2_s4, after d2_s3, 2m
+    ite5 (2CLK)         :crit,    d2_s5, after d2_s4, 2m
+    Buffer (1CLK)     :done,    d2_buf, after d2_s5, 1m
+
+    section rap_Data 3
+    %% II=2，所以從 00:04 開始
+    Input (1CLK)      :done,    d3_in, 00:02, 1m
+    ite1 (2CLK)         :active,  d3_s1, after d3_in, 2m
+    ite2 (2CLK)         :active,  d3_s2, after d3_s1, 2m
+    ite3 (1CLK)         :         d3_s3, after d3_s2, 1m
+    ite4 (2CLK)         :crit,    d3_s4, after d3_s3, 2m
+    ite5 (2CLK)         :crit,    d3_s5, after d3_s4, 2m
+    Buffer (1CLK)     :done,    d3_buf, after d3_s5, 1m
+
+```

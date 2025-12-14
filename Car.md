@@ -365,7 +365,7 @@ gantt
     %% 3. 強制 X 軸從 00:00 開始
     %% 所有的長度單位都改用 "m" (分鐘)
     
-    section Data 1
+    section rap_Data 1
     Input (1CLK)      :done,    d1_in, 00:00, 1m
     ite1 (2CLK)         :active,  d1_s1, after d1_in, 2m
     ite2 (2CLK)         :active,  d1_s2, after d1_s1, 2m
@@ -374,7 +374,7 @@ gantt
     ite5 (2CLK)         :crit,    d1_s5, after d1_s4, 2m
     Buffer (1CLK)     :done,    d1_buf, after d1_s5, 1m
 
-    section Data 2
+    section rap_Data 2
     %% II=2，所以從 00:02 開始
     Input (1CLK)      :done,    d2_in, 00:01, 1m
     ite1 (2CLK)         :active,  d2_s1, after d2_in, 2m
@@ -384,7 +384,7 @@ gantt
     ite5 (2CLK)         :crit,    d2_s5, after d2_s4, 2m
     Buffer (1CLK)     :done,    d2_buf, after d2_s5, 1m
 
-    section Data 3
+    section rap_Data 3
     %% II=2，所以從 00:04 開始
     Input (1CLK)      :done,    d3_in, 00:02, 1m
     ite1 (2CLK)         :active,  d3_s1, after d3_in, 2m

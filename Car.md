@@ -677,6 +677,7 @@ gantt
 
 ```
 
+```mermaid
 
     ite1 (2CLK)         :active,  d1_s1, after d1_in, 2m
     ite2 (2CLK)         :active,  d1_s2, after d1_s1, 2m

@@ -788,3 +788,60 @@ gantt
     Buffer      :done,   buf, after it6, 1m
 
 ```
+
+```mermaid
+
+%%{init: { 'gantt': {'barHeight': 25, 'sectionFontSize': 14} } }%%
+gantt
+    title Pipeline Tspec: Normalize (Pre-S3) vs Iteration (Post-S3)
+    dateFormat  HH:mm
+    axisFormat  %-M
+    
+    %% 設定 1 CLK = 1 分鐘 (m)
+
+    %% =======================
+    %% Input
+    %% =======================
+    section Input Data
+    Data_In         :done,   d_in, 00:00, 1m
+
+    %% =======================
+    %% Phase 1: Normalize (S3 之前)
+    %% =======================
+    
+    %% It1 -->|1CLK+1CLK| S1 (Merge -> 2m)
+    section Normalize 1 (It1)
+    norm_val_1      :active, n1, after d_in, 2m
+
+    %% It2 -->|1CLK+1CLK| S2 (Merge -> 2m)
+    section Normalize 2 (It2)
+    norm_val_2      :active, n2, after n1, 2m
+
+    %% It3 -->|1CLK| S3 (Merge -> 1m)
+    section Normalize 3 (It3)
+    norm_val_3      :active, n3, after n2, 1m
+
+    %% =======================
+    %% Phase 2: Iteration (S3 之後)
+    %% =======================
+
+    %% It4 -->|1CLK+1CLK| S4 (Merge -> 2m)
+    section Iteration 1 (It4)
+    iter_val_1      :crit,   i1, after n3, 2m
+
+    %% It5 -->|1CLK+1CLK| S5 (Merge -> 2m)
+    section Iteration 2 (It5)
+    iter_val_2      :crit,   i2, after i1, 2m
+
+    %% It6 -->|1CLK| Buffer (Merge -> 1m)
+    section Iteration 3 (It6)
+    iter_val_3      :crit,   i3, after i2, 1m
+
+    %% =======================
+    %% Output
+    %% =======================
+    section Buffer Output
+    Buf_Out         :done,   buf, after i3, 1m
+
+
+```

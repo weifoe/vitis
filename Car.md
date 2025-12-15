@@ -643,7 +643,7 @@ gantt
     iter 3      :active, m_it3, after m_it2, 2m
     
     section iter 4
-    iter 4      :active, m_it4, after m_it3, 2m
+    iter 4      :active, m_it4, after m_it3, 1m
 
     %% =======================
     %% Path Mid

@@ -845,3 +845,45 @@ gantt
 
 
 ```
+
+```mermaid
+%%{init: { 'gantt': {'tickInterval': '1s', 'axisFormat': '%S'} } }%%
+gantt
+    title Softmax 3-Stage Pipeline (Exp與Adder重疊執行)
+    dateFormat  s
+    axisFormat  %S s
+
+    %% ==========================================
+    %% Stage 1: Exponential Calculation (Main Engine)
+    %% 特點：Exp 單元一直很忙，沒有停下來等 Adder
+    %% ==========================================
+    section Stage 1: Exp Unit
+    Batch 1 (8clk)       :active, e1, 0, 8s
+    Batch 2 (9clk)       :active, e2, after e1, 9s
+    Batch 3 (10clk)      :active, e3, after e2, 10s
+
+    %% ==========================================
+    %% Stage 2: Accumulation Pipeline
+    %% 特點：這是流水線的關鍵。
+    %% 當 Stage 1 在算 Batch 2 時，Stage 2 正在加總 Batch 1
+    %% ==========================================
+    section Stage 2: Adder Pipe
+    Wait B1             :done,   wait1, 0, 8s
+    Buf+Add (Batch 1)   :crit,   acc1, after e1, 3s
+    
+    %% 空閒時間 (等待 Batch 2 算完)
+    Wait B2             :done,   wait2, after acc1, 6s 
+    Buf+Add (Batch 2)   :crit,   acc2, after e2, 3s
+
+    %% 等待 Batch 3 算完
+    Wait B3             :done,   wait3, after acc2, 7s
+    Buf+Add (Batch 3)   :crit,   acc3, after e3, 3s
+
+    %% ==========================================
+    %% Stage 3: Final Result (Rap & Mul)
+    %% 必須等最後一次加總 (Total Sum) 完成
+    %% ==========================================
+    section Stage 3: Final Ops
+    Rap (Reciprocal)    :active, rap, after acc3, 10s
+    Mul (Result)        :done,   mul, after rap, 1s
+```

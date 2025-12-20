@@ -887,3 +887,108 @@ gantt
     Rap (Reciprocal)    :active, rap, after acc3, 10s
     Mul (Result)        :done,   mul, after rap, 1s
 ```
+
+```mermaid
+%%{init: { 'gantt': {'barHeight': 20, 'sectionFontSize': 14, 'axisFormat': '%M'} } }%%
+gantt
+    title Pipeline: Data 1(8clk) -> Data 2(9clk) -> Data 3(10clk)
+    dateFormat  HH:mm
+    axisFormat  %-M m
+
+    %% ====================================================
+    %% Data 1: 標準 8 CLK (參考你的原始代碼)
+    %% Main Path: 1(R) + 2(i1) + 2(i2) + 2(i3) + 1(i4) = 8
+    %% ====================================================
+    section Data 1 (8 CLK)
+    Range             :done,    d1_r, 00:00, 1m
+    iter 1            :active,  d1_i1, after d1_r, 2m
+    iter 2            :active,  d1_i2, after d1_i1, 2m
+    iter 3            :active,  d1_i3, after d1_i2, 2m
+    iter 4            :active,  d1_i4, after d1_i3, 1m
+    Sq1+Sq2 (Bot)     :         d1_bot, after d1_i4, 2m
+    Buffer Latch      :         d1_out, after d1_bot, 1m
+
+    %% ====================================================
+    %% Data 2: 變為 9 CLK
+    %% 流水線入口：延後 2m 進入 (00:02)
+    %% 變化：Iter 3 變為 3m (紅色標示)
+    %% Main Path: 1 + 2 + 2 + 3 + 1 = 9
+    %% ====================================================
+    section Data 2 (9 CLK)
+    Range             :done,    d2_r, 00:02, 1m
+    iter 1            :active,  d2_i1, after d2_r, 2m
+    iter 2            :active,  d2_i2, after d2_i1, 2m
+    iter 3 (Long)     :crit,    d2_i3, after d2_i2, 3m
+    iter 4            :active,  d2_i4, after d2_i3, 1m
+    Sq1+Sq2 (Bot)     :         d2_bot, after d2_i4, 2m
+    Buffer Latch      :         d2_out, after d2_bot, 1m
+
+    %% ====================================================
+    %% Data 3: 變為 10 CLK
+    %% 流水線入口：延後 4m 進入 (00:04)
+    %% 變化：Iter 3 變為 3m, Iter 4 變為 2m (紅色標示)
+    %% Main Path: 1 + 2 + 2 + 3 + 2 = 10
+    %% ====================================================
+    section Data 3 (10 CLK)
+    Range             :done,    d3_r, 00:04, 1m
+    iter 1            :active,  d3_i1, after d3_r, 2m
+    iter 2            :active,  d3_i2, after d3_i1, 2m
+    iter 3 (Long)     :crit,    d3_i3, after d3_i2, 3m
+    iter 4 (Long)     :crit,    d3_i4, after d3_i3, 2m
+    Sq1+Sq2 (Bot)     :         d3_bot, after d3_i4, 2m
+    Buffer Latch      :         d3_out, after d3_bot, 1m
+
+```
+```mermaid
+
+%%{init: { 'gantt': {'barHeight': 20, 'sectionFontSize': 14, 'axisFormat': '%M'} } }%%
+gantt
+    title Pipeline Path Selection: No SQ(8) vs SQ1(9) vs SQ1+2(10)
+    dateFormat  HH:mm
+    axisFormat  %-M m
+
+    %% ====================================================
+    %% Data 1: 總長 8 CLK (最短路徑)
+    %% 路徑: Range(1)+i1(2)+i2(2)+i3(2)+i4(1) = 8
+    %% 特點: 不經過 Square，直接 Latch
+    %% ====================================================
+    section Data 1 (8 CLK - No SQ)
+    Range             :done,    d1_r, 00:00, 1m
+    iter 1            :active,  d1_i1, after d1_r, 2m
+    iter 2            :active,  d1_i2, after d1_i1, 2m
+    iter 3            :active,  d1_i3, after d1_i2, 2m
+    iter 4            :active,  d1_i4, after d1_i3, 1m
+    Buffer Latch      :done,    d1_out, after d1_i4, 1m
+
+    %% ====================================================
+    %% Data 2: 總長 9 CLK
+    %% Start: 延後 2m 進入 (00:02)
+    %% 路徑: ... + i4(1) + Square1(1) = 9
+    %% 特點: 經過 Square 1
+    %% ====================================================
+    section Data 2 (9 CLK - SQ1)
+    Range             :done,    d2_r, 00:02, 1m
+    iter 1            :active,  d2_i1, after d2_r, 2m
+    iter 2            :active,  d2_i2, after d2_i1, 2m
+    iter 3            :active,  d2_i3, after d2_i2, 2m
+    iter 4            :active,  d2_i4, after d2_i3, 1m
+    Square 1          :crit,    d2_sq1, after d2_i4, 1m
+    Buffer Latch      :done,    d2_out, after d2_sq1, 1m
+
+    %% ====================================================
+    %% Data 3: 總長 10 CLK (最長路徑)
+    %% Start: 延後 4m 進入 (00:04)
+    %% 路徑: ... + i4(1) + Square1(1) + Square2(1) = 10
+    %% 特點: 經過 Square 1 和 Square 2
+    %% ====================================================
+    section Data 3 (10 CLK - SQ1+SQ2)
+    Range             :done,    d3_r, 00:04, 1m
+    iter 1            :active,  d3_i1, after d3_r, 2m
+    iter 2            :active,  d3_i2, after d3_i1, 2m
+    iter 3            :active,  d3_i3, after d3_i2, 2m
+    iter 4            :active,  d3_i4, after d3_i3, 1m
+    Square 1          :crit,    d3_sq1, after d3_i4, 1m
+    Square 2          :crit,    d3_sq2, after d3_sq1, 1m
+    Buffer Latch      :done,    d3_out, after d3_sq2, 1m
+
+```

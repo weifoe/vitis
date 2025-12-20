@@ -992,3 +992,53 @@ gantt
     Buffer Latch      :done,    d3_out, after d3_sq2, 1m
 
 ```
+
+```mermaid
+
+%%{init: { 'gantt': {'barHeight': 20, 'sectionFontSize': 14, 'axisFormat': '%M'} } }%%
+gantt
+    title Tight Pipeline: Data 1(No SQ) / Data 2(SQ1) / Data 3(SQ1+2)
+    dateFormat  HH:mm
+    axisFormat  %-M m
+
+    %% ====================================================
+    %% Data 1: 總長 8 CLK (No Square)
+    %% 時間: 00:00 開始
+    %% 當它在 00:01 進入 iter 1 時，Data 2 剛好開始 Input
+    %% ====================================================
+    section Data 1 (8 CLK)
+    Range (In)        :done,    d1_r, 00:00, 1m
+    iter 1            :active,  d1_i1, after d1_r, 2m
+    iter 2            :active,  d1_i2, after d1_i1, 2m
+    iter 3            :active,  d1_i3, after d1_i2, 2m
+    iter 4            :active,  d1_i4, after d1_i3, 1m
+    Buffer Latch      :done,    d1_out, after d1_i4, 1m
+
+    %% ====================================================
+    %% Data 2: 總長 9 CLK (With SQ1)
+    %% 時間: 00:01 開始 (緊接著 Data 1 的 Input 之後)
+    %% ====================================================
+    section Data 2 (9 CLK)
+    Range (In)        :done,    d2_r, 00:01, 1m
+    iter 1            :active,  d2_i1, after d2_r, 2m
+    iter 2            :active,  d2_i2, after d2_i1, 2m
+    iter 3            :active,  d2_i3, after d2_i2, 2m
+    iter 4            :active,  d2_i4, after d2_i3, 1m
+    Square 1          :crit,    d2_sq1, after d2_i4, 1m
+    Buffer Latch      :done,    d2_out, after d2_sq1, 1m
+
+    %% ====================================================
+    %% Data 3: 總長 10 CLK (With SQ1 + SQ2)
+    %% 時間: 00:02 開始 (緊接著 Data 2 的 Input 之後)
+    %% ====================================================
+    section Data 3 (10 CLK)
+    Range (In)        :done,    d3_r, 00:02, 1m
+    iter 1            :active,  d3_i1, after d3_r, 2m
+    iter 2            :active,  d3_i2, after d3_i1, 2m
+    iter 3            :active,  d3_i3, after d3_i2, 2m
+    iter 4            :active,  d3_i4, after d3_i3, 1m
+    Square 1          :crit,    d3_sq1, after d3_i4, 1m
+    Square 2          :crit,    d3_sq2, after d3_sq1, 1m
+    Buffer Latch      :done,    d3_out, after d3_sq2, 1m
+
+```

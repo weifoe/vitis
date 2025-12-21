@@ -1042,3 +1042,63 @@ gantt
     Buffer Latch      :done,    d3_out, after d3_sq2, 1m
 
 ```
+```mermaid
+graph TD
+    %% 定義樣式
+    classDef stage1 fill:#e1f5fe,stroke:#01579b,stroke-width:2px,rx:5,ry:5;
+    classDef stage2 fill:#fff3e0,stroke:#e65100,stroke-width:2px,rx:5,ry:5;
+    classDef pipeReg fill:#cfd8dc,stroke:#455a64,stroke-width:2px,rx:0,ry:0;
+    classDef memory fill:#dcedc8,stroke:#33691e,stroke-width:2px,rx:0,ry:0;
+
+    %% 輸入
+    Input_Inst[32-bit Instruction] --> Slicer
+
+    subgraph SG1 ["Stage 1: Decode & Fetch (Cycle N)"]
+        Slicer[Instruction Slicer] -- "Opcode[6:0]" --> OpCheck{"Opcode Check<br/>== OP_IMM?"}
+        Slicer -- "Funct3[14:12]" --> F3Check{"Funct3 Check<br/>(Nested Case)"}
+        Slicer -- "Imm[31:20]" --> ImmPath(Immediate Path)
+
+        OpCheck -- Yes --> F3Check
+        OpCheck -- No --> SelNone[SEL_NONE]
+
+        F3Check -- "001" --> Sel001[SEL_001]
+        F3Check -- "101" --> Sel101[SEL_101]
+        F3Check -- Others --> SelNone
+    end
+
+    %% 流水線暫存器牆
+    subgraph PR ["Pipeline Registers (DFFs)"]
+        P1_Imm_Reg["p1_imm_reg<br/>(12-bit Addr)"]
+        P1_Sel_Reg["p1_table_sel<br/>(2-bit Control)"]
+    end
+
+    %% 連接到暫存器
+    ImmPath --> P1_Imm_Reg
+    Sel001 --> P1_Sel_Reg
+    Sel101 --> P1_Sel_Reg
+    SelNone --> P1_Sel_Reg
+
+    subgraph SG2 ["Stage 2: Execute & Memory Access (Cycle N+1)"]
+        LUT_001[LUT Mem 001<br/>Funct3=001]:::memory
+        LUT_101[LUT Mem 101<br/>Funct3=101]:::memory
+        OutputMux{"Output MUX<br/>(Case Statement)"}
+        
+        P1_Imm_Reg -- Address --> LUT_001
+        P1_Imm_Reg -- Address --> LUT_101
+        
+        LUT_001 -- Data --> OutputMux
+        LUT_101 -- Data --> OutputMux
+        
+        P1_Sel_Reg -- Select Control --> OutputMux
+        P1_Sel_Reg -- Valid Generation --> ValidLogic(Valid Logic)
+    end
+
+    %% 輸出
+    OutputMux --> Output_Data[lut_output]
+    ValidLogic --> Output_Valid[valid_out]
+
+    %% 樣式套用
+    class SG1 stage1;
+    class SG2 stage2;
+    class P1_Imm_Reg,P1_Sel_Reg pipeReg;
+```

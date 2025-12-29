@@ -1102,3 +1102,62 @@ graph TD
     class SG2 stage2;
     class P1_Imm_Reg,P1_Sel_Reg pipeReg;
 ```
+
+
+```mermaid
+graph TD
+    %% 定義樣式
+    classDef input fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef logic fill:#e1f5fe,stroke:#0277bd,stroke-width:2px;
+    classDef field fill:#fff9c4,stroke:#fbc02d,stroke-width:2px;
+    classDef hardware fill:#e0f2f1,stroke:#00695c,stroke-width:2px;
+
+    %% 1. 輸入指令
+    Instr[32-bit Instruction Machine Code]:::input
+    
+    %% 2. 第一步：解碼 Opcode
+    Instr -->|Bits 6:0| Opcode[Opcode 解碼]:::logic
+    
+    %% 3. 判斷是否為 I-Type
+    Opcode -- 識別為 I-Type --> TypeCheck{I-Type Format}:::logic
+
+    %% 4. 依照 I-Type 格式拆解欄位
+    TypeCheck -->|Bits 14:12| Funct3[Funct3 功能碼]:::field
+    TypeCheck -->|Bits 31:20| Imm[Immediate 立即數]:::field
+    TypeCheck -->|Bits 19:15| RS1[rs1 來源暫存器索引]:::field
+    TypeCheck -->|Bits 11:7| RD[rd 目標暫存器索引]:::field
+
+    %% 5. 各欄位的去向 (硬體行為)
+    
+    %% Funct3 決定具體運算
+    Funct3 --> ALU_Ctrl[ALU Control 運算控制]:::hardware
+    Opcode -.-> ALU_Ctrl
+    
+    %% 立即數處理 (重點：你的 LUT 指令在這裡)
+    Imm --> SignExt[Sign Extend 符號擴充]:::hardware
+    SignExt -->|Operand B| ALU[ALU 運算單元 / LUT 查表]:::hardware
+    
+    %% rs1 讀取
+    RS1 --> RegFile_Read[Register File 讀取埠]:::hardware
+    RegFile_Read -->|Operand A| ALU
+    
+    %% rd 寫回
+    RD --> RegFile_Write[Register File 寫入埠]:::hardware
+    ALU -->|Result| RegFile_Write
+
+    %% 連結說明
+    subgraph Flow [解碼流程]
+        direction TB
+        Opcode
+        TypeCheck
+    end
+
+    subgraph Fields [欄位拆解]
+        direction LR
+        Imm
+        RS1
+        Funct3
+        RD
+    end
+
+```

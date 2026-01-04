@@ -1161,3 +1161,40 @@ graph TD
     end
 
 ```
+
+```mermaid
+graph TD
+    %% 定義樣式以區分層級
+    classDef opcode fill:#f9f,stroke:#333,stroke-width:4px,color:black;
+    classDef field fill:#dfd,stroke:#333,stroke-width:2px,color:black;
+    classDef logic fill:#bdf,stroke:#333,stroke-width:2px,color:black;
+    classDef final fill:#ff9,stroke:#333,stroke-width:2px,color:black;
+
+    %% 1. 頂層：Opcode 決定指令格式
+    OP("Opcode<br/>(Custom CORDIC)"):::opcode
+
+    %% 2. 第二層：衍生出實體欄位
+    OP --> |Bits 19:15| R1(rs1):::field
+    OP --> |Bits 24:20| R2(rs2):::field
+    OP --> |Bits 31:25 & 14:12| IMM_Raw(imm):::field
+    OP --> |Bits 11:7| RD(rd):::final
+
+    %% 3. 第三層：邏輯意義與資料流
+    subgraph Data_Logic [資料邏輯處理]
+        %% R1 拆解邏輯
+        R1 -.-> |讀取暫存器| R1_Data[RS1 Data]
+        R1_Data --> |高 16 位| X("x (cordic_x)"):::logic
+        R1_Data --> |低 16 位| Y("y (cordic_y)"):::logic
+
+        %% R2 邏輯
+        R2 -.-> |讀取暫存器| Z("z (cordic_z / Angle)"):::logic
+
+        %% Imm 邏輯 (查找表索引)
+        IMM_Raw --> |拼接 10-bit| IDX("查找表索引值<br/>(Table Index)"):::logic
+    end
+
+    %% 4. 運算與寫回 (示意)
+    X & Y & Z & IDX -.-o ALU[CORDIC 運算核心]
+    ALU --> |計算結果| RD
+
+```

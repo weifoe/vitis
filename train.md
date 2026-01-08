@@ -45,6 +45,13 @@
     * 預測目標：落點 X 座標
 <img width="1200" height="1200" alt="image" src="https://github.com/user-attachments/assets/402b70c5-7ecd-4857-af0e-abcbde62d2ad" />
 
+### 1.1 訓練資料集
+
+<img width="1511" height="984" alt="image" src="https://github.com/user-attachments/assets/9ca68b0b-329d-4f85-8e9a-465b600c1158" />
+
+- ### 訓練資料集用359個.pickle檔案作為訓練資料用359個.pickle檔案作為訓練資料
+
+
 
 ### 2. 資料前處理 (Normalization)
 
@@ -119,11 +126,13 @@ $$MSE = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2$$
 
 <img width="1000" height="600" alt="image" src="https://github.com/user-attachments/assets/8b889c0f-aeda-45dd-9eeb-47c5fee20b15" />
 
+- ### 以上的圖可以確定到第50步的時候損失達到0.000066
+
 # 測試方式
-## 確認模型正確,本組採用(演算法vs模型))
+## 確認模型正確,本組採用(演算法vs模型)對打五局)
 
 
-- ### (1p(模型) vs (模型)
+- ### (1p(模型) vs 2p(模型)
 [https://www.youtube.com/watch?v=1HdwYs-FdP0](https://youtu.be/7BVF2nzztVY)
 | 場次 (Game) | 原檔標籤 | 時間 (Time) | 最終比分 | 結果 | 備註 |
 | :---: | :---: | :---: | :---: | :---: | :--- |

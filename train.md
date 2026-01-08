@@ -132,8 +132,8 @@ $$MSE = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2$$
 ## 確認模型正確,本組採用(演算法vs模型)對打五局)
 
 
-- ### (1p(模型) vs 2p(模型)
-[https://www.youtube.com/watch?v=1HdwYs-FdP0](https://youtu.be/7BVF2nzztVY)
+- ### (1p(模型) vs 2p(物理公式暴力解)
+[https://wwwyoutube.com/watch?v=1HdwYs-FdP0](https://youtu.be/7BVF2nzztVY)
 | 場次 (Game) | 原檔標籤 | 時間 (Time) | 最終比分 | 結果 | 備註 |
 | :---: | :---: | :---: | :---: | :---: | :--- |
 | **1** | Step 1 | 16:21 | **5 - 2** | **1P 獲勝** | 本場出現過平手 (Draw) 與 2P 得分 |
@@ -143,7 +143,7 @@ $$MSE = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2$$
 | **5** | Step 4 (B) | 16:28 | **5 - 0** | **1P 獲勝** | 完封 (Perfect Game) |
 
 
-### 1P (演算法) vs 2P (模型) 對戰總結表
+### 1P (物理公式暴力解) vs 2P (模型) 對戰總結表
 
 [https://www.youtube.com/watch?v=_z0315H4C6g](https://youtu.be/YVBCedaBfFg)
 

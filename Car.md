@@ -1306,3 +1306,116 @@ Adam 的參數更新過程包含以下四個步驟：
 | **$\epsilon$** | **數值穩定常數** (Epsilon) | 一個極小的值 (例如 $10^{-8}$)，防止分母為 0 導致程式崩潰。 |
 
 ---
+```mermaid
+flowchart TD
+    %% --- 初始設定 ---
+    Start([開始 SOFTMAX_BLOCK]) --> Init[初始化變數<br/>_sum = 0, _i = 0]
+
+    %% --- 階段 1: Exp 計算與累加 ---
+    subgraph Phase1 ["階段 1: 計算 Exp 並累加 (Accumulate)"]
+        direction TB
+        CheckLoop1{_i < count ?}
+        
+        LoadVal[讀取輸入值<br/>_val_in = in_arr_i]
+        
+        %% 關鍵硬體指令
+        AsmExp[[ASM_CORDIC_EXP<br/>呼叫硬體計算 e^x]]
+        
+        StoreTemp[暫存 Exp 結果<br/>out_arr_i = _exp_res]
+        
+        %% 關鍵硬體指令
+        AsmAdd[[ASM_ADD<br/>累加總和 _sum += _exp_res]]
+        
+        IncLoop1[計數器 _i++]
+
+        Init --> CheckLoop1
+        CheckLoop1 -- Yes --> LoadVal
+        LoadVal --> AsmExp
+        AsmExp --> StoreTemp
+        StoreTemp --> AsmAdd
+        AsmAdd --> IncLoop1
+        IncLoop1 --> CheckLoop1
+    end
+
+    %% --- 中間輸出 ---
+    ExportSum[匯出總和<br/>*sum_out_ptr = _sum]
+    CheckLoop1 -- No --> ExportSum
+
+    %% --- 階段 2: 正規化 ---
+    subgraph Phase2 ["階段 2: 正規化 (Normalization)"]
+        direction TB
+        ResetLoop[重置計數器 _i = 0]
+        CheckLoop2{_i < count ?}
+        
+        LoadExp[讀取暫存的 Exp 值<br/>_curr_exp = out_arr_i]
+        
+        BitShift[定點數擴展<br/>_numerator = _curr_exp << 16]
+        
+        %% 關鍵硬體指令
+        AsmDiv[[ASM_DIV<br/>除法歸一化 / _sum]]
+        
+        StoreProb[儲存最終機率<br/>out_arr_i = _final_prob]
+        
+        IncLoop2[計數器 _i++]
+
+        ExportSum --> ResetLoop
+        ResetLoop --> CheckLoop2
+        CheckLoop2 -- Yes --> LoadExp
+        LoadExp --> BitShift
+        BitShift --> AsmDiv
+        AsmDiv --> StoreProb
+        StoreProb --> IncLoop2
+        IncLoop2 --> CheckLoop2
+    end
+
+    %% --- 結束 ---
+    End([結束 End])
+    CheckLoop2 -- No --> End
+
+    %% --- 樣式設定 ---
+    style AsmExp fill:#d1c4e9,stroke:#512da8,stroke-width:2px,color:black
+    style AsmAdd fill:#ffe0b2,stroke:#f57c00,stroke-width:2px,color:black
+    style AsmDiv fill:#ffe0b2,stroke:#f57c00,stroke-width:2px,color:black
+    style StoreTemp fill:#e3f2fd,stroke:#1565c0
+    style BitShift fill:#e3f2fd,stroke:#1565c0
+```
+
+```mermaid
+graph TD
+    subgraph "Compute Subsystem"
+        C0("MIV_RV32 Core 0<br/>(Master 0)")
+        C1("MIV_RV32 Core 1<br/>(Master 1)")
+    end
+
+    subgraph "Interconnect"
+        Matrix{"AHB Bus Matrix<br/>(CoreAHB)"}
+    end
+
+    subgraph "Memory & Peripherals"
+        PM0[("Private RAM<br/>(Core 0 Code/Stack)")]
+        PM1[("Private RAM<br/>(Core 1 Code/Stack)")]
+        SM[("Shared SRAM<br/>(Data Exchange)")]
+        PER["Peripherals<br/>(UART, GPIO, SPI)"]
+    end
+
+    %% AHB Bus Connections
+    C0 -- "AHBL_M_TARGET" --> Matrix
+    C1 -- "AHBL_M_TARGET" --> Matrix
+    
+    Matrix -- "Port 0" --> PM0
+    Matrix -- "Port 1" --> PM1
+    Matrix -- "Port 2" --> SM
+    Matrix -- "Port 3" --> PER
+
+    %% IPC Connections
+    C0 -. "GPIO Out -> EXT_IRQ" .-> C1
+    C1 -. "GPIO Out -> EXT_IRQ" .-> C0
+
+    %% Styling
+    style C0 fill:#d4e1f5,stroke:#333,stroke-width:2px
+    style C1 fill:#d4e1f5,stroke:#333,stroke-width:2px
+    style Matrix fill:#f9f2d0,stroke:#d4a017,stroke-width:2px
+    style SM fill:#ffdddd,stroke:#333
+
+
+```

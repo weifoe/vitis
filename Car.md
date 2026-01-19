@@ -1352,7 +1352,7 @@ flowchart TD
         BitShift[定點數擴展<br/>_numerator = _curr_exp << 16]
         
         %% 關鍵硬體指令
-        AsmDiv[[ASM_DIV<br/>除法歸一化 / _sum]]
+        AsmDiv[[ASM_DIV<br/>EXP / EXP_sum]]
         
         StoreProb[儲存最終機率<br/>out_arr_i = _final_prob]
         

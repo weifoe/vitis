@@ -1419,3 +1419,52 @@ graph TD
 
 
 ```
+```mermaid
+graph TD
+    subgraph "Compute Cluster"
+        C0[("Core 0")]
+        C1[("Core 1")]
+        C2[("Core 2")]
+        C3[("Core 3")]
+    end
+
+    subgraph "Interconnect"
+        Matrix{{"AHB Bus Matrix (4 Masters)"}}
+    end
+
+    subgraph "Memory System"
+        L0[("Local RAM 0")]
+        L1[("Local RAM 1")]
+        L2[("Local RAM 2")]
+        L3[("Local RAM 3")]
+        Shared[("Shared SRAM")]
+    end
+    
+    subgraph "Control"
+        IPC["IPC / IRQ Controller<br/>(Custom Logic)"]
+    end
+
+    %% Master Connections
+    C0 --> Matrix
+    C1 --> Matrix
+    C2 --> Matrix
+    C3 --> Matrix
+
+    %% Slave Connections (Simplified)
+    Matrix --> L0
+    Matrix --> L1
+    Matrix --> L2
+    Matrix --> L3
+    Matrix --> Shared
+    Matrix --> IPC
+
+    %% Interrupt Feedback
+    IPC -.->|IRQ| C0
+    IPC -.->|IRQ| C1
+    IPC -.->|IRQ| C2
+    IPC -.->|IRQ| C3
+
+    style Matrix fill:#f9f2d0,stroke:#d4a017
+    style IPC fill:#ffcccc,stroke:#333
+    style Shared fill:#e1d5e7,stroke:#333
+```

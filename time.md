@@ -1,7 +1,6 @@
 # 實驗設計
 
-<img width="2263" height="1083" alt="image" src="https://github.com/user-attachments/assets/c22f48ba-5dd8-41c2-9133-55a477810e3e" />
-
+<img width="2263" height="1083" alt="1768992278316278522730991434524" src="https://github.com/user-attachments/assets/dd5eb251-9ac4-4376-8ed4-1fda5cc8b363" />
 
 
 # 時程表

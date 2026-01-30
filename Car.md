@@ -1531,3 +1531,59 @@ graph LR
     Gating --> NextLayer
 
 ```
+
+```mermaid
+graph TD
+    %% --- 定義樣式 ---
+    classDef memory fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef sw_control fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef hw_conv fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef hw_softmax fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px;
+    classDef integration fill:#fff9c4,stroke:#fbc02d,stroke-width:2px;
+
+    %% --- V0: 輸入 ---
+    V0((V0: Input Feature)):::memory
+    
+    %% --- 分流 (ResNet 核心結構) ---
+    V0 --> Split_Point{Split Data}
+    
+    %% --- 路徑 A: 捷徑 (Skip Connection / Identity) ---
+    subgraph Skip_Path ["捷徑路徑 (Software/Direct)"]
+        Split_Point -- 原始數據副本 --> V1_Delay[V1: Delay FIFO<br>等待卷積完成]:::sw_control
+    end
+
+    %% --- 路徑 B: 瓶頸層計算 (Hardware Accelerated) ---
+    subgraph Bottleneck_Path ["瓶頸層計算 (HW加速)"]
+        direction TB
+        
+        %% 步驟 1: 權重與數據準備
+        Split_Point -- 進入計算流 --> V2_Fetch[V2: Fetch Weights<br>載入 1x1/3x3 權重]:::hw_conv
+        
+        %% 步驟 2: 卷積硬體核心 (您指定的乘加樹)
+        subgraph Conv_Hardware ["V3: Convolution Engine (乘加樹)"]
+            V2_Fetch --> V3_Mult[<b>乘法樹</b><br>Multiplier Tree<br>並行計算 Ch x Kernel]:::hw_conv
+            V3_Mult --> V3_Add[<b>加法樹</b><br>Adder Tree<br>快速收斂]:::hw_conv
+            V3_Add --> V3_Acc[累加器<br>Accumulator<br>完成 1x1->3x3->1x1]:::hw_conv
+        end
+    end
+
+    %% --- V4: 殘差匯合 (Residual Add) ---
+    V4_Node((V4: Residual Add<br>元素相加)):::integration
+    
+    V1_Delay --> V4_Node
+    V3_Acc --> V4_Node
+    
+    %% --- V5: 激勵函數 (Softmax 加速) ---
+    %% 這裡接上您指定的 Softmax 硬體流水線
+    subgraph Softmax_Hardware ["V5: Activation/Output (Softmax HW)"]
+        V4_Node --> V5_Max[Find Max<br>比較器樹]:::hw_softmax
+        V5_Max --> V5_Sub[Sub Max]:::hw_softmax
+        V5_Sub --> V5_Exp[Exp LUT<br>指數查表]:::hw_softmax
+        V5_Exp --> V5_Sum[Sum Tree<br>分母累加]:::hw_softmax
+        V5_Sum --> V5_Div[Div Unit<br>倒數乘法/除法]:::hw_softmax
+    end
+
+    %% --- V6: 輸出 ---
+    V6((V6: Next Layer)):::memory
+    V5_Div --> V6
+```

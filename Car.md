@@ -1587,3 +1587,85 @@ graph TD
     V6((V6: Next Layer)):::memory
     V5_Div --> V6
 ```
+
+```mermaid
+graph TD
+    %% --- 樣式設定 ---
+    classDef standard fill:#e3f2fd,stroke:#1565c0,stroke-width:2px;
+    classDef hw_accel fill:#ffebee,stroke:#c62828,stroke-width:3px;
+    classDef softmax_blk fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
+    classDef junction fill:#fff9c4,stroke:#fbc02d,stroke-width:2px;
+    classDef memory fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+
+    %% --- 1. 宏觀視角：ResNet-50 骨幹 ---
+    subgraph Backbone ["ResNet-50 骨幹流程 (Macro View)"]
+        direction TB
+        Input((Input Image)):::memory --> Stage0[Stage 0: Conv7x7 + MaxPool]:::standard
+        Stage0 --> Stage1[Stage 1: 3x Blocks]:::standard
+        Stage1 --> Stage2[Stage 2: 4x Blocks]:::standard
+        Stage2 --> Stage3[Stage 3: 6x Blocks]:::standard
+        Stage3 --> Stage4[Stage 4: 3x Blocks]:::standard
+        Stage4 --> AvgPool[Global Avg Pool]:::standard
+        AvgPool --> FC[FC Output Layer]:::standard
+        FC --> Output((Classes)):::memory
+    end
+
+    %% --- 2. 微觀細節：硬體加速的 Bottleneck Block ---
+    subgraph Detail ["修改後的 Bottleneck Block (硬體細節)"]
+        direction TB
+        
+        %% Block 輸入
+        BlockInput(Block Input Feature):::memory
+        
+        %% A. 主卷積路徑 (Standard)
+        subgraph MainPath ["主特徵提取路徑"]
+            Conv1[1x1 Conv BN ReLU]:::standard
+            Conv2[3x3 Conv BN ReLU]:::standard
+            Conv3[1x1 Conv BN]:::standard
+        end
+
+        %% B. 硬體加速支線 (Hardware Accelerator)
+        %% 這是您的核心設計：卷積乘加樹 + Softmax
+        subgraph HW_Module ["硬體加速模組 (HW IP)"]
+            direction TB
+            
+            %% 分流點
+            Branch_Start((分流)):::junction
+            
+            %% 卷積部分
+            HW_MAC[<b>卷積乘加樹</b><br>Multiplier-Adder Tree<br>並行計算特徵]:::hw_accel
+            
+            %% 激勵部分
+            HW_Softmax[<b>Softmax 流水線</b><br>1.Find Max<br>2.Exp LUT<br>3.Sum & Div]:::softmax_blk
+            
+            Branch_Start --> HW_MAC
+            HW_MAC --> HW_Softmax
+        end
+
+        %% --- 連線邏輯 ---
+        BlockInput --> Conv1
+        Conv1 --> Conv2
+        Conv2 --> Conv3
+        
+        %% 關鍵設計：從 Conv2 輸出拉到硬體加速
+        Conv2 --> Branch_Start
+        
+        %% 融合 (Gating): Softmax 輸出的權重 x 主線特徵
+        Gating_Node{<b>Gating 乘法</b><br>Feature * Softmax}:::junction
+        
+        Conv3 --> Gating_Node
+        HW_Softmax -->|激勵權重| Gating_Node
+        
+        %% 殘差相加 (ResNet Identity)
+        Residual_Add((<b>殘差相加</b><br>Element-wise Add)):::junction
+        
+        BlockInput -->|Skip Connection| Residual_Add
+        Gating_Node --> Residual_Add
+        
+        %% 輸出
+        Residual_Add --> BlockOutput(Block Output):::memory
+    end
+
+    %% --- 視覺連結：表示 Stage2 內部是 Detail 結構 ---
+    Stage2 -.-> Detail
+```

@@ -1496,5 +1496,38 @@ gantt
     論文初稿完成             :milestone, 2024-05-23, 0d
     指導教授審閱與修改       :2024-05-24, 20d
     格式調整與最終定稿       :crit, 2024-06-17, 10d
-    論文繳交與口試準備       :milestone, 2024-06-30, 0d
+    論文繳交與口試準備       :milestone, 2024-06-30,
+ 0d
+```
+```mermaid
+graph LR
+    %% 定義節點 (Vertices represent Activities)
+    Input((V0: Input Feature))
+    
+    %% 主線路徑 (Main Branch)
+    MainConv((V1: Main Conv2d))
+    
+    %% 支線路徑 (Acceleration Branch - 你的 AOV 模組)
+    WeightFetch((V2: Fetch Weights))
+    WeightConv((V3: Weight Conv1d))
+    Softmax((V4: Softmax))
+    
+    %% 匯合點 (Integration)
+    Gating((V5: Gating / Mul))
+    NextLayer((V6: Next Layer))
+
+    %% 定義邊 (Edges represent Dependency)
+    Input --> MainConv
+    Input --> WeightFetch
+    
+    %% 支線流程
+    WeightFetch --> WeightConv
+    WeightConv --> Softmax
+    
+    %% 關鍵匯合：主線算出特徵，支線算出機率，兩者相乘
+    MainConv --> Gating
+    Softmax --> Gating
+    
+    Gating --> NextLayer
+
 ```

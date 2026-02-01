@@ -1734,6 +1734,57 @@ graph TD
     Final_Softmax --> Result
 
     %% 註釋連線
-    linkStyle default stroke:#333,stroke-width:1px;
+    linkStyle default stroke:#333
 
+
+,stroke-width:1px;
+
+```
+```mermaid
+graph LR
+    %% === 樣式定義 (Styles) ===
+    classDef tensor fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:black;
+    classDef process fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,rx:5,ry:5,color:black;
+    classDef critical fill:#fff9c4,stroke:#fbc02d,stroke-width:3px,stroke-dasharray: 0,color:black;
+    classDef output fill:#dcedc8,stroke:#2e7d32,stroke-width:2px,color:black;
+
+    %% === 1. 模型輸入 ===
+    subgraph Step1_Input [1. 模型輸入]
+        InputNode["Input Image Batch<br/>輸入圖片張量<br/>Shape: N, 3, 224, 224"]:::tensor
+        Norm["標準化<br/>Normalization"]:::process
+    end
+
+    %% === 2. 特徵提取 (隱藏層) ===
+    subgraph Step2_Backbone [2. 隱藏層處理]
+        Backbone["ResNet Stages 1-4<br/>無數層卷積運算"]:::process
+        FeatMap["Feature Maps<br/>特徵圖<br/>Shape: N, 2048, 7, 7"]:::tensor
+    end
+
+    %% === 3. 為 Softmax 準備數據 (分類頭) ===
+    subgraph Step3_Preparation [3. 準備 Softmax 輸入]
+        GAP["Global Avg Pooling<br/>全球平均池化"]:::process
+        Vector["Feature Vector<br/>特徵向量<br/>Shape: N, 2048"]:::tensor
+        FC["Fully Connected Layer<br/>全連接層 Wx+b"]:::process
+    end
+
+    %% === 4. 關鍵點 ===
+    subgraph Step4_The_Answer [4. Softmax 的輸入與輸出]
+        Logits["Logits 對數幾率<br/>(Softmax 的輸入)<br/>Shape: N, 1000<br/>數值: -∞ ~ +∞, 未歸一化"]:::critical
+        SoftmaxFunc(("Softmax<br/>函數")):::process
+        Probs["Probabilities<br/>(最終輸出)<br/>Shape: N, 1000<br/>數值: 0 ~ 1, 加總為 1"]:::output
+    end
+
+    %% === 連線 ===
+    InputNode --> Norm
+    Norm --> Backbone
+    Backbone -->|"提取空間特徵"| FeatMap
+    FeatMap -->|"壓扁: 7x7 -> 1x1"| GAP
+    GAP -->|"拉平"| Vector
+    Vector -->|"投影: 2048 -> 1000"| FC
+    FC -->|"產出分數"| Logits
+    Logits -->|"輸入"| SoftmaxFunc
+    SoftmaxFunc -->|"輸出"| Probs
+
+    %% === 註解連線 ===
+    linkStyle default stroke:#333,stroke-width:1.5px;
 ```

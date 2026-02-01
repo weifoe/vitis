@@ -1669,3 +1669,71 @@ graph TD
     %% --- 視覺連結：表示 Stage2 內部是 Detail 結構 ---
     Stage2 -.-> Detail
 ```
+
+```mermaid
+graph TD
+    %% 定義樣式
+    classDef standard fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:black;
+    classDef weights fill:#ffcc80,stroke:#e65100,stroke-width:2px,stroke-dasharray: 5 5,color:black;
+    classDef aov fill:#fff9c4,stroke:#fbc02d,stroke-width:2px,color:black;
+    classDef final fill:#dcedc8,stroke:#2e7d32,stroke-width:2px,color:black;
+
+    Input(輸入圖片 Image):::standard --> Stem(Stage 0: Conv1 + MaxPool)
+    Stem --> Stage1(Stage 1)
+    Stage1 --> Stage2(Stage 2)
+    
+    %% --- 重點區域：隱藏層中的 AOV Softmax ---
+    subgraph Bottleneck_Block [隱藏層: 某個 Bottleneck Block]
+        direction TB
+        
+        %% 主線數據流
+        Input_Feat(輸入特徵圖 Input Feature):::standard
+        Conv1x1_A(1x1 Conv 壓縮):::standard
+        Conv3x3_Op(3x3 卷積運算):::standard
+        Conv1x1_B(1x1 Conv 擴張):::standard
+        
+        %% AOV 支線 (你的加速核心)
+        subgraph AOV_Mechanism [AOV 權重注意力機制]
+            direction LR
+            Weight_Node[3x3 卷積核權重 Weights]:::weights
+            AOV_Conv[AOV 1D 卷積]:::aov
+            Inter_Softmax((AOV Softmax)):::aov
+            Gating_Probs[通道機率遮罩]:::aov
+        end
+        
+        %% AOV 連線邏輯
+        Input_Feat --> Conv1x1_A
+        Conv1x1_A --> Conv3x3_Op
+        
+        %% 關鍵：AOV 的輸入來源是「權重」，不是圖片
+        Weight_Node --1. 提取權重--> AOV_Conv
+        AOV_Conv --2. 產生分數--> Inter_Softmax
+        Inter_Softmax --3. 輸出 0~1 機率--> Gating_Probs
+        
+        %% 關鍵：匯合點
+        Conv3x3_Op --圖片特徵--> Multiplier(X 乘法閘控):::aov
+        Gating_Probs --權重重要性--> Multiplier
+        
+        Multiplier --> Conv1x1_B
+    end
+    
+    Conv1x1_B --> Stage3(Stage 3)
+    Stage3 --> Stage4(Stage 4)
+
+    %% --- 標準區域：輸出層的分類 Softmax ---
+    subgraph Output_Layer [輸出層: 最終分類]
+        GAP(Global Avg Pool):::standard
+        FC(Fully Connected / Linear):::standard
+        Final_Softmax((分類 Softmax)):::final
+        Result(輸出結果: 貓/狗):::final
+    end
+
+    Stage4 --> GAP
+    GAP --> FC
+    FC --4. 輸入 Logits (1000類)--> Final_Softmax
+    Final_Softmax --> Result
+
+    %% 註釋連線
+    linkStyle default stroke:#333,stroke-width:1px;
+
+```

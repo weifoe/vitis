@@ -1,49 +1,42 @@
 ```mermaid
 graph TD
-    %% 核心 1 任務：卷積前端
-    subgraph Core1 ["Core 1: 卷積前端 (Conv Front-end)"]
-        A1["影像預處理與載入"] --> A2["Conv1 (7x7) + MaxPool"]
-        A2 --> A3["ResNet Stage 1 (3 Blocks)"]
+    subgraph Board0 [FPGA Board 0: 初始提取與 Stage 1]
+        A[輸入影像 224x224x3] --> B[Conv1: 7x7, Stride 2]
+        B --> C[Max Pooling: 3x3]
+        C --> D[Stage 1: 3x Bottleneck Blocks]
     end
 
-    %% 核心 2 任務：卷積中端
-    subgraph Core2 ["Core 2: 卷積中端 (Conv Mid-range)"]
-        A3 --> B1["ResNet Stage 2 (4 Blocks)"]
-        B1 --> B2["ResNet Stage 3 (前 3 個 Blocks)"]
+    D -- "GTH 高速傳輸" --> E
+
+    subgraph Board1 [FPGA Board 1: Stage 2]
+        E[接收 Stage 1 特徵] --> F[Stage 2: 4x Bottleneck Blocks]
     end
 
-    %% 核心 3 任務：卷積後端
-    subgraph Core3 ["Core 3: 卷積後端 (Conv Back-end)"]
-        B2 --> C1["ResNet Stage 3 (後 3 個 Blocks)"]
-        C1 --> C2["ResNet Stage 4 (3 Blocks)"]
-        C2 --> C3["全域平均池化 (GAP)"]
+    F -- "GTH 高速傳輸" --> G
+
+    subgraph Board2 [FPGA Board 2: Stage 3]
+        G[接收 Stage 2 特徵] --> H[Stage 3: 6x Bottleneck Blocks]
     end
 
-    %% 核心 4 任務：分類輸出
-    subgraph Core4 ["Core 4: 分類與 Softmax (FC & Softmax)"]
-        C3 --> D1["全連結層 (FC Layer)"]
-        D1 --> D2["Softmax 歸一化運算"]
-        
-        %% 自定義指令加速區塊
-        subgraph MI_V_Custom ["Mi-V 自定義硬體加速"]
-            E1{{"CUST_EXP (自定義指數指令)"}}
-        end
-        
-        D2 -.->|呼叫硬體指令| E1
-        E1 -.->|回傳結果| D2
-        
-        D2 --> F1["輸出分類結果 (Top-1)"]
+    H -- "GTH 高速傳輸" --> I
+
+    subgraph Board3 [FPGA Board 3: Stage 4 與 分類層]
+        I[接收 Stage 3 特徵] --> J[Stage 4: 3x Bottleneck Blocks]
+        J --> K[Global Average Pooling]
+        K --> L[Fully Connected Layer]
+        L --> M[Softmax / 分類結果]
     end
 
-    %% 樣式美化
-    style Core1 fill:#f0f7ff,stroke:#0050bc
-    style Core2 fill:#f2fff2,stroke:#008000
-    style Core3 fill:#fff9f0,stroke:#d47500
-    style Core4 fill:#fff0f5,stroke:#b00050
-    style E1 fill:#ffffd0,stroke:#b8860b,stroke-width:2px
+    %% 樣式設定
+    style Board0 fill:#f9f9f9,stroke:#333,stroke-width:2px
+    style Board1 fill:#f9f9f9,stroke:#333,stroke-width:2px
+    style Board2 fill:#f9f9f9,stroke:#333,stroke-width:2px
+    style Board3 fill:#f9f9f9,stroke:#333,stroke-width:2px
+
 
 
 ```
+
 ---
 ```mermaid
 graph TD

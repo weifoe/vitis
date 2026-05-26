@@ -37,7 +37,7 @@
 | 環境 | PolarFire SoC Icicle Kit 開發板 |
 | 軟硬體 | Mi-V 軟核（部署於 FPGA Fabric）、SoftConsole IDE、RISC-V GCC `-O2` |
 | 參數 | CORDIC 流水線級數：10 級；時脈頻率：待補 MHz |
-| Data Set | 100 組浮點數輸入，範圍 [-10, 10](待確定)，涵蓋 Softmax 經 max-subtraction 後之典型分佈 |
+| Data Set | 100 組浮點數輸入，範圍 [-10, 10](待測)，涵蓋 Softmax 經 max-subtraction 後之典型分佈 |
 | 資料格式 | 對照組：IEEE 754 浮點；受測組：輸入先軟體轉換為 Q8.24 定點後送入自訂指令 |
 
 ### 量測指標
